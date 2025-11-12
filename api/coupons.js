@@ -1,76 +1,125 @@
+const https = require('https');
+
+// Função auxiliar para fazer requisições HTTPS
+function makeRequest(url, token, apiKey) {
+    return new Promise((resolve, reject) => {
+        // --- ATUALIZAÇÃO DE AUTENTICAÇÃO ---
+        // Adicionamos o 'x-api-key' conforme a documentação nova.
+        // Usamos a apiKey específica ou o token como fallback.
+        const headers = {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            'User-Agent': 'CupaOferta-App/1.0',
+            'x-api-key': apiKey || token 
+        };
+
+        const options = { headers };
+
+        https.get(url, options, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => {
+                try {
+                    // Aceita 200 (OK) e 206 (Partial Content - comum em listas grandes)
+                    if (res.statusCode >= 200 && res.statusCode < 300) {
+                        resolve(JSON.parse(data));
+                    } else {
+                        reject({ status: res.statusCode, message: `Erro AWIN: ${res.statusMessage || res.statusCode}` });
+                    }
+                } catch (e) {
+                    reject({ status: 500, message: 'Erro ao processar JSON da AWIN' });
+                }
+            });
+        }).on('error', (err) => reject({ status: 500, message: err.message }));
+    });
+}
+
 module.exports = async (req, res) => {
-  const AWIN_TOKEN = process.env.AWIN_API_TOKEN;
-  const PUBLISHER_ID = process.env.AWIN_PUBLISHER_ID;
+    // Configuração de CORS e Cache
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET');
+    res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
 
-  // 1. Verificação de Segurança Inicial
-  if (!AWIN_TOKEN || !PUBLISHER_ID) {
-    console.error("ERRO CRÍTICO: Variáveis de ambiente não configuradas na Vercel.");
-    return res.status(500).json({ 
-      error: 'CONFIG_MISSING', 
-      message: 'As chaves da AWIN não foram configuradas no painel da Vercel.' 
-    });
-  }
+    // Busca as credenciais do ambiente
+    const AWIN_TOKEN = process.env.AWIN_API_TOKEN;
+    const AWIN_KEY = process.env.AWIN_API_KEY; // Nova variável (opcional, fallback para TOKEN)
+    const PUBLISHER_ID = process.env.AWIN_PUBLISHER_ID;
 
-  try {
-    // 2. Montagem da URL
-    // Documentação: https://wiki.awin.com/index.php/API_get_promotions
-    const url = `https://api.awin.com/publisher/${PUBLISHER_ID}/promotions?relationship=joined`;
-
-    console.log(`Tentando conectar na AWIN: Publisher ${PUBLISHER_ID}`);
-
-    const response = await fetch(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${AWIN_TOKEN}`,
-        'Content-Type': 'application/json',
-        'User-Agent': 'CupaOferta-App/1.0'
-      }
-    });
-
-    // 3. Tratamento de Erros da API AWIN
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Erro AWIN (${response.status}):`, errorText);
-      
-      if (response.status === 401) {
-        return res.status(401).json({ error: 'AUTH_ERROR', message: 'Token da AWIN inválido ou expirado.' });
-      }
-      if (response.status === 404) {
-        return res.status(404).json({ error: 'NOT_FOUND', message: 'Publisher ID incorreto ou rota inexistente.' });
-      }
-      
-      return res.status(response.status).json({ error: 'API_ERROR', message: `Erro na AWIN: ${errorText}` });
+    if (!AWIN_TOKEN || !PUBLISHER_ID) {
+        return res.status(500).json({ 
+            error: 'CONFIG_MISSING', 
+            message: 'Configure AWIN_API_TOKEN e AWIN_PUBLISHER_ID na Vercel.' 
+        });
     }
 
-    const data = await response.json();
+    try {
+        let allOffers = [];
 
-    // 4. Verifica se veio vazio (Caso comum: você não tem parcerias aprovadas ainda)
-    if (!Array.isArray(data) || data.length === 0) {
-      console.warn("AWIN retornou lista vazia. O usuário tem parceiros aprovados?");
-      return res.status(200).json([]); // Retorna array vazio, frontend decide o que fazer
+        // 1. Buscar CUPONS (Promotions API)
+        // Documentação antiga: Usa Authorization Bearer
+        try {
+            const couponsData = await makeRequest(
+                `https://api.awin.com/publisher/${PUBLISHER_ID}/promotions?relationship=joined`, 
+                AWIN_TOKEN,
+                AWIN_KEY
+            );
+
+            if (Array.isArray(couponsData)) {
+                const formattedCoupons = couponsData.map(promo => ({
+                    type: 'coupon',
+                    promotionId: promo.promotionId,
+                    advertiser: { name: promo.advertiser.name, id: promo.advertiser.id },
+                    code: promo.code,
+                    description: promo.title || promo.description,
+                    trackingUrl: promo.clickUrl || promo.trackingUrl,
+                    endDate: promo.endDate || 'Em breve',
+                    logoUrl: null
+                }));
+                allOffers = [...allOffers, ...formattedCoupons];
+            }
+        } catch (err) {
+            console.warn("API Promos:", err.message);
+        }
+
+        // 2. Buscar PRODUTOS (Product API)
+        // Documentação nova: Exige x-api-key
+        if (allOffers.length < 6) {
+            try {
+                const productsData = await makeRequest(
+                    `https://api.awin.com/publishers/${PUBLISHER_ID}/product-search?min_price=10&limit=12`, 
+                    AWIN_TOKEN,
+                    AWIN_KEY // Aqui o x-api-key é crucial
+                );
+
+                if (productsData && productsData.products) {
+                    const formattedProducts = productsData.products.map(prod => ({
+                        type: 'product',
+                        promotionId: prod.productId,
+                        advertiser: { name: prod.merchant.name, id: prod.merchant.id },
+                        code: 'OFERTA',
+                        description: `${prod.productName} - Por ${prod.price} ${prod.currency}`,
+                        trackingUrl: prod.awinDeepLink,
+                        endDate: 'Enquanto durar',
+                        logoUrl: prod.largeImage || prod.merchant.logoUrl
+                    }));
+                    allOffers = [...allOffers, ...formattedProducts];
+                }
+            } catch (err) {
+                console.warn("API Produtos:", err.message);
+            }
+        }
+
+        if (allOffers.length === 0) {
+            return res.status(200).json([]);
+        }
+
+        return res.status(200).json(allOffers);
+
+    } catch (error) {
+        console.error("Erro Crítico:", error);
+        return res.status(500).json({ 
+            error: 'AUTH_ERROR', 
+            message: 'Falha na autenticação com AWIN.' 
+        });
     }
-
-    // 5. Formatação dos dados
-    const formatted = data.map(promo => ({
-      promotionId: promo.promotionId,
-      advertiser: { 
-        name: promo.advertiser?.name || 'Parceiro', 
-        id: promo.advertiser?.id 
-      },
-      code: promo.code || null, // Se for null, é oferta de link
-      description: promo.title || promo.description,
-      trackingUrl: promo.clickUrl || promo.trackingUrl,
-      endDate: promo.endDate,
-      logoUrl: promo.advertiser?.logoUrl // Tenta pegar logo se disponível
-    }));
-
-    // Cache curto para garantir atualização rápida enquanto testa
-    res.setHeader('Cache-Control', 's-maxage=60, stale-while-revalidate');
-    
-    return res.status(200).json(formatted);
-
-  } catch (error) {
-    console.error('Erro Interno do Servidor:', error);
-    return res.status(500).json({ error: 'INTERNAL_ERROR', message: error.message });
-  }
 };
