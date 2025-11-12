@@ -46,14 +46,3 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'Falha ao buscar cupons' });
   }
 }
-
-### 3. Como fazer o Deploy
-
-1.  **Suba para o GitHub:** Coloque o `index.html` e a pasta `api/` em um repositório.
-2.  **Importe na Vercel:** Vá no painel da Vercel e importe o projeto.
-3.  **Variáveis de Ambiente (Environment Variables):**
-    Antes de clicar em "Deploy", ou nas configurações do projeto depois, adicione:
-    * `AWIN_API_TOKEN`: Sua chave gerada no painel da AWIN.
-    * `AWIN_PUBLISHER_ID`: Seu ID de afiliado.
-
-Assim que o deploy terminar, o `index.html` vai tentar acessar `/api/coupons`. Se as chaves estiverem certas, ele mostrará os cupons reais. Se não, ele mostrará os dados de teste (Demo).
