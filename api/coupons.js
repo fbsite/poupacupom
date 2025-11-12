@@ -13,7 +13,7 @@ module.exports = async (req, res) => {
 
   try {
     // Rota correta: 'publisher' (singular) e com filtro 'joined'
-    const url = `https://api.awin.com/publisher/${PUBLISHER_ID}/promotions?relationship=joined`;
+    const url = `https://api.awin.com/publisher/${PUBLISHER_ID}/promotion?relationship=joined`;
 
     // O 'fetch' é nativo no Node.js 18+, que é o padrão da Vercel
     const response = await fetch(url, {
