@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CupaOferta - Cupons Verificados</title>
+    <title>CupaOferta - Cupons e Descontos Verificados</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -18,124 +18,102 @@
             height: 100%;
             z-index: -1;
             opacity: 0.4;
+            pointer-events: none;
         }
-        /* Shimmer effect for loading */
+        /* Skeleton Animation */
         .skeleton {
-            background: #f6f7f8;
-            background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
+            background: #f1f5f9;
+            background-image: linear-gradient(to right, #f1f5f9 0%, #e2e8f0 20%, #f1f5f9 40%, #f1f5f9 100%);
             background-repeat: no-repeat;
             background-size: 800px 100%; 
             animation-duration: 1s;
             animation-fill-mode: forwards; 
             animation-iteration-count: infinite;
-            animation-name: placeholderShimmer;
+            animation-name: shimmer;
             animation-timing-function: linear;
         }
-        @keyframes placeholderShimmer {
+        @keyframes shimmer {
             0% { background-position: -468px 0; }
             100% { background-position: 468px 0; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 relative overflow-x-hidden">
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen relative">
 
     <div id="canvas-container"></div>
 
-    <!-- Notification -->
+    <!-- Toast Notification -->
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-6 py-4 rounded-lg shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-start gap-3 z-50 max-w-sm border-l-4 border-indigo-500">
         <i data-lucide="check-circle" class="w-5 h-5 text-indigo-400 mt-0.5 flex-shrink-0"></i>
         <div>
             <p class="font-bold text-sm mb-0.5">Código copiado!</p>
-            <p class="text-xs text-slate-400">Já abrimos a loja para você aplicar o desconto.</p>
+            <p class="text-xs text-slate-400">Redirecionando para a loja...</p>
         </div>
     </div>
 
+    <!-- Header -->
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
             <div class="flex items-center gap-2">
-                <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-indigo-200 shadow-lg">
-                    <i data-lucide="percent" class="w-6 h-6"></i>
+                <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-lg shadow-indigo-200">
+                    <i data-lucide="ticket" class="w-6 h-6"></i>
                 </div>
                 <h1 class="text-xl md:text-2xl font-bold text-slate-900 tracking-tight">Cupa<span class="text-indigo-600">Oferta</span></h1>
             </div>
             <div class="flex items-center gap-3">
-                 <span id="api-status" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500">
-                    <span class="w-2 h-2 rounded-full bg-yellow-400"></span> Verificando API...
+                 <span id="api-status" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
+                    <span class="w-2 h-2 rounded-full bg-slate-400"></span> Conectando...
                 </span>
-                <button class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition-colors">
-                    Newsletter
+                <button class="bg-slate-900 text-white px-4 py-2 rounded-full text-sm font-medium hover:bg-slate-800 transition-colors shadow-lg shadow-slate-200">
+                    Top Ofertas
                 </button>
             </div>
         </div>
     </header>
 
+    <!-- Hero Section -->
     <section class="pt-12 pb-8 px-4">
         <div class="container mx-auto max-w-3xl text-center">
             <h2 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight">
-                Economize em cada clique.
+                Cupons verificados para você.
             </h2>
             <p class="text-slate-600 mb-8 text-lg">
-                Cupons atualizados e verificados diretamente das maiores lojas do Brasil.
+                As melhores ofertas das lojas que você ama, atualizadas diariamente.
             </p>
             
-            <div class="relative max-w-lg mx-auto group">
+            <div class="relative max-w-lg mx-auto group z-10">
                 <div class="absolute inset-0 bg-indigo-500 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                 <div class="relative bg-white p-2 rounded-full shadow-xl border border-slate-200 flex items-center">
                     <i data-lucide="search" class="ml-4 text-slate-400 w-5 h-5"></i>
-                    <input type="text" id="searchInput" placeholder="Busque por Amazon, Nike, KaBuM!..." class="flex-1 px-4 py-2 outline-none text-slate-700 bg-transparent placeholder:text-slate-400">
+                    <input type="text" id="searchInput" placeholder="Buscar loja (ex: Amazon, Nike...)" class="flex-1 px-4 py-2 outline-none text-slate-700 bg-transparent placeholder:text-slate-400">
                 </div>
             </div>
         </div>
     </section>
 
-    <main class="container mx-auto px-4 pb-20 max-w-6xl">
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pb-20 max-w-6xl flex-grow">
         
         <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
             <h3 class="font-bold text-xl text-slate-800 flex items-center gap-2">
-                <i data-lucide="flame" class="w-5 h-5 text-orange-500 fill-orange-500"></i> Ofertas Quentes
+                <i data-lucide="zap" class="w-5 h-5 text-yellow-500 fill-yellow-500"></i> Destaques de Hoje
             </h3>
             <button onclick="fetchCoupons()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors p-2 rounded-lg hover:bg-indigo-50">
-                <i data-lucide="rotate-cw" class="w-4 h-4"></i> Atualizar
+                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar
             </button>
         </div>
 
-        <!-- Skeleton Loader -->
+        <!-- Skeleton Loader (Placeholder enquanto carrega) -->
         <div id="skeleton-loader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <!-- Repetição de Skeletons -->
             <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm">
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 rounded-full skeleton shrink-0"></div>
-                    <div class="w-full">
-                        <div class="h-4 w-24 skeleton mb-2 rounded"></div>
-                        <div class="h-3 w-16 skeleton rounded"></div>
-                    </div>
-                </div>
-                <div class="h-4 w-full skeleton rounded mt-4"></div>
-                <div class="h-4 w-2/3 skeleton rounded mt-2"></div>
-                <div class="h-10 w-full skeleton rounded mt-auto"></div>
+                <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
             </div>
              <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm hidden md:flex">
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 rounded-full skeleton shrink-0"></div>
-                    <div class="w-full">
-                        <div class="h-4 w-24 skeleton mb-2 rounded"></div>
-                        <div class="h-3 w-16 skeleton rounded"></div>
-                    </div>
-                </div>
-                <div class="h-4 w-full skeleton rounded mt-4"></div>
-                <div class="h-4 w-2/3 skeleton rounded mt-2"></div>
-                <div class="h-10 w-full skeleton rounded mt-auto"></div>
+                <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
             </div>
              <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm hidden lg:flex">
-                <div class="flex gap-4">
-                    <div class="w-12 h-12 rounded-full skeleton shrink-0"></div>
-                    <div class="w-full">
-                        <div class="h-4 w-24 skeleton mb-2 rounded"></div>
-                        <div class="h-3 w-16 skeleton rounded"></div>
-                    </div>
-                </div>
-                <div class="h-4 w-full skeleton rounded mt-4"></div>
-                <div class="h-4 w-2/3 skeleton rounded mt-2"></div>
-                <div class="h-10 w-full skeleton rounded mt-auto"></div>
+                <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
             </div>
         </div>
 
@@ -144,59 +122,133 @@
             <!-- JS injects here -->
         </div>
         
+        <!-- Estado de Erro -->
         <div id="error-state" class="hidden text-center py-12">
             <div class="bg-red-50 inline-flex p-4 rounded-full mb-4"><i data-lucide="wifi-off" class="w-6 h-6 text-red-500"></i></div>
-            <h3 class="text-lg font-bold text-slate-800">Não conseguimos carregar os cupons</h3>
-            <p class="text-slate-500 mb-4">Verifique sua conexão ou tente novamente.</p>
+            <h3 class="text-lg font-bold text-slate-800">Não foi possível carregar</h3>
+            <p class="text-slate-500 mb-4">Verifique sua conexão.</p>
             <button onclick="fetchCoupons()" class="text-indigo-600 font-bold hover:underline">Tentar novamente</button>
         </div>
 
     </main>
 
+    <!-- Footer -->
+    <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto relative z-10">
+        <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+            <div class="col-span-1 md:col-span-1">
+                <div class="flex items-center gap-2 text-white mb-4">
+                    <i data-lucide="ticket" class="w-5 h-5 text-indigo-500"></i>
+                    <span class="font-bold text-lg">CupaOferta</span>
+                </div>
+                <p class="text-sm text-slate-500 leading-relaxed">
+                    Sua plataforma confiável para economizar online. Conectamos você aos melhores descontos das maiores lojas do Brasil.
+                </p>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Empresa</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Sobre nós</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Anuncie aqui</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Trabalhe conosco</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Ajuda</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">FAQ</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Como usar cupons</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Fale conosco</a></li>
+                </ul>
+            </div>
+            
+            <div>
+                <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Legal</h4>
+                <ul class="space-y-2 text-sm">
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Termos de Uso</a></li>
+                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Política de Privacidade</a></li>
+                </ul>
+                <div class="flex gap-4 mt-6">
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="twitter" class="w-5 h-5"></i></a>
+                    <a href="#" class="text-slate-400 hover:text-white transition-colors"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="border-t border-slate-800 pt-8 mt-8">
+            <div class="container mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-slate-600">
+                <p>&copy; 2025 CupaOferta. Todos os direitos reservados.</p>
+                <p class="flex items-center gap-1">Feito com <i data-lucide="heart" class="w-3 h-3 text-red-500 fill-red-500"></i> em São Paulo</p>
+            </div>
+        </div>
+    </footer>
+
     <script>
+        // Inicializa Ícones
         lucide.createIcons();
 
-        // --- DADOS DE FALLBACK (Para funcionar sem API configurada) ---
+        // --- DADOS DE FALLBACK (GARANTIA) ---
+        // Estes dados aparecem se a API falhar ou não estiver configurada
         const MOCK_DATA = [
             {
-                promotionId: 1,
-                advertiser: { name: "Amazon", id: 123 },
-                code: "PRIME20",
-                description: "20% OFF em dispositivos Echo e Kindle",
+                promotionId: 101,
+                advertiser: { name: "Amazon Brasil", id: 123 },
+                code: "PRIME25",
+                description: "R$ 50 OFF em dispositivos Echo com Alexa",
                 trackingUrl: "https://amazon.com.br",
                 endDate: "2025-12-31",
                 logoUrl: "https://placehold.co/60x60/232f3e/fff?text=A"
             },
             {
-                promotionId: 2,
-                advertiser: { name: "Nike", id: 456 },
-                code: "JUSTDOIT",
-                description: "Frete Grátis + 15% extra no app",
+                promotionId: 102,
+                advertiser: { name: "Nike Store", id: 456 },
+                code: "CORRIDA20",
+                description: "20% de desconto extra em Tênis de Corrida",
                 trackingUrl: "https://nike.com.br",
                 endDate: "2025-11-30",
                 logoUrl: "https://placehold.co/60x60/111/fff?text=N"
             },
             {
-                promotionId: 3,
+                promotionId: 103,
                 advertiser: { name: "Magazine Luiza", id: 789 },
                 code: "MAGALU10",
-                description: "R$ 100 de desconto em Eletrodomésticos",
+                description: "10% de desconto no PIX em Smartphones",
                 trackingUrl: "https://magazineluiza.com.br",
                 endDate: "2025-10-15",
                 logoUrl: "https://placehold.co/60x60/0086ff/fff?text=M"
             },
             {
-                promotionId: 4,
+                promotionId: 104,
                 advertiser: { name: "KaBuM!", id: 101 },
-                code: "NINJA15",
-                description: "15% de desconto no PIX em Hardware",
+                code: "GAMER15",
+                description: "15% OFF em Periféricos Gamer selecionados",
                 trackingUrl: "https://kabum.com.br",
                 endDate: "2025-12-01",
                 logoUrl: "https://placehold.co/60x60/ff6500/fff?text=K"
+            },
+            {
+                promotionId: 105,
+                advertiser: { name: "AliExpress", id: 999 },
+                code: "BR150",
+                description: "R$ 150 de desconto em compras acima de R$ 1000",
+                trackingUrl: "https://aliexpress.com",
+                endDate: "2025-11-20",
+                logoUrl: "https://placehold.co/60x60/ff0000/fff?text=Ali"
+            },
+            {
+                promotionId: 106,
+                advertiser: { name: "Casas Bahia", id: 333 },
+                code: "MDS10",
+                description: "Cupom de 10% em Móveis e Decoração",
+                trackingUrl: "https://casasbahia.com.br",
+                endDate: "2025-12-10",
+                logoUrl: "https://placehold.co/60x60/003399/fff?text=CB"
             }
         ];
 
-        // --- LÓGICA PRINCIPAL ---
+        // --- LÓGICA ROBUSTA DE CARREGAMENTO ---
         const grid = document.getElementById('coupons-grid');
         const skeleton = document.getElementById('skeleton-loader');
         const errorState = document.getElementById('error-state');
@@ -204,34 +256,42 @@
         let allCoupons = [];
 
         async function fetchCoupons() {
+            // 1. Resetar UI para estado de carregamento
             grid.classList.add('hidden');
             errorState.classList.add('hidden');
             skeleton.classList.remove('hidden');
-            
+            updateStatus('loading');
+
             try {
-                // 1. Tenta buscar da API Serverless da Vercel
-                // O caminho /api/coupons será criado na estrutura da Vercel
+                console.log("Tentando conectar API...");
+                
+                // Tenta buscar da rota da Vercel (localmente isso vai falhar e cair no catch)
                 const response = await fetch('/api/coupons');
                 
+                // Se a resposta não for JSON válido ou der erro 404/500
                 if (!response.ok) {
-                    throw new Error("API Serverless não encontrada ou erro 500");
+                    throw new Error(`Erro na API: ${response.status}`);
                 }
 
                 const data = await response.json();
                 
-                if(data.error) throw new Error(data.error);
+                if (data.error) throw new Error(data.error);
+                if (!Array.isArray(data)) throw new Error("Formato de dados inválido");
 
+                // Sucesso!
                 allCoupons = data;
-                updateStatus(true);
+                updateStatus('live');
                 renderCoupons(allCoupons);
 
             } catch (error) {
-                console.warn("Modo API falhou, usando dados locais (Mock).", error);
+                console.warn("⚠️ API não disponível ou falhou. Usando MOCK_DATA de fallback.", error);
                 
-                // Fallback para demonstrar o layout se a API não estiver configurada
-                await new Promise(r => setTimeout(r, 800)); // Fake delay
+                // Pequeno delay para simular carregamento se estiver local (para a UI não piscar muito rápido)
+                await new Promise(r => setTimeout(r, 1000));
+                
+                // CARREGA DADOS DE TESTE AUTOMATICAMENTE
                 allCoupons = MOCK_DATA;
-                updateStatus(false);
+                updateStatus('demo');
                 renderCoupons(allCoupons);
             } finally {
                 skeleton.classList.add('hidden');
@@ -239,69 +299,79 @@
             }
         }
 
-        function updateStatus(isLive) {
-            if(isLive) {
-                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> API Conectada`;
-                statusBadge.className = "hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-100";
-            } else {
+        // Atualiza o indicador visual no topo
+        function updateStatus(state) {
+            if(state === 'live') {
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span> API Online`;
+                statusBadge.className = "hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-green-50 text-green-700 border border-green-200";
+            } else if (state === 'demo') {
                 statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-orange-400"></span> Modo Demo`;
-                statusBadge.className = "hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-100";
+                statusBadge.className = "hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200";
+            } else {
+                statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-slate-400 animate-ping"></span> Conectando...`;
+                statusBadge.className = "hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200";
             }
         }
 
         function renderCoupons(coupons) {
             grid.innerHTML = '';
+            
             if(coupons.length === 0) {
-                grid.innerHTML = '<div class="col-span-3 text-center text-slate-500">Nenhuma oferta encontrada.</div>';
+                grid.innerHTML = '<div class="col-span-3 text-center text-slate-500 py-10">Nenhuma oferta encontrada para sua busca.</div>';
                 return;
             }
 
             coupons.forEach(coupon => {
-                // Garante que temos uma logo (Fallback)
-                const logo = coupon.logoUrl || `https://placehold.co/60x60/eee/999?text=${coupon.advertiser.name.charAt(0)}`;
+                // Fallback para logo se a API não retornar uma
+                const logo = coupon.logoUrl || `https://placehold.co/60x60/f1f5f9/334155?text=${coupon.advertiser.name.charAt(0)}`;
                 
                 const card = document.createElement('div');
-                card.className = "bg-white rounded-2xl p-0 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group overflow-hidden";
+                card.className = "bg-white rounded-2xl p-0 border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group overflow-hidden h-full";
                 
                 card.innerHTML = `
                     <div class="p-6 flex-1 flex flex-col">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-3">
-                                <img src="${logo}" alt="${coupon.advertiser.name}" class="w-12 h-12 rounded-lg object-contain bg-slate-50 border border-slate-100 p-1">
+                                <div class="w-12 h-12 rounded-lg bg-white border border-slate-100 p-1 flex items-center justify-center overflow-hidden shadow-sm">
+                                    <img src="${logo}" alt="${coupon.advertiser.name}" class="max-w-full max-h-full object-contain">
+                                </div>
                                 <div>
-                                    <h3 class="font-bold text-slate-900 leading-tight">${coupon.advertiser.name}</h3>
-                                    <span class="text-xs text-slate-400">Verificado hoje</span>
+                                    <h3 class="font-bold text-slate-900 leading-tight text-sm md:text-base">${coupon.advertiser.name}</h3>
+                                    <span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full mt-1 border border-green-100">
+                                        <i data-lucide="shield-check" class="w-3 h-3"></i> VERIFICADO
+                                    </span>
                                 </div>
                             </div>
                         </div>
                         
-                        <p class="text-slate-700 font-medium text-lg mb-4 line-clamp-2 flex-1">
+                        <p class="text-slate-700 font-medium text-lg mb-4 line-clamp-3 flex-1">
                             ${coupon.description}
                         </p>
 
-                        <div class="flex items-center gap-2 text-xs text-slate-400 bg-slate-50 p-2 rounded-lg self-start">
-                            <i data-lucide="calendar-clock" class="w-3 h-3"></i> Expira: ${coupon.endDate}
+                        <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg self-start mt-auto w-full">
+                            <i data-lucide="clock" class="w-3 h-3"></i> Válido até: <span class="font-semibold">${coupon.endDate}</span>
                         </div>
                     </div>
 
                     <div class="p-4 bg-slate-50 border-t border-slate-100 border-dashed flex items-center justify-between gap-3">
-                         <div class="font-mono text-slate-400 text-sm tracking-wider select-none bg-white px-2 py-1 rounded border border-slate-200">
-                            ${coupon.code ? coupon.code.slice(0, 4) + '****' : 'VER OFERTA'}
+                         <div class="font-mono text-slate-500 text-sm tracking-wider select-none bg-white px-3 py-1.5 rounded border border-slate-200 shadow-sm">
+                            ${coupon.code ? coupon.code.slice(0, 4) + '****' : 'OFERTA'}
                         </div>
                         <button onclick="handleConversion('${coupon.code || ''}', '${coupon.trackingUrl}')" 
-                            class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-indigo-200 active:scale-95 flex items-center justify-center gap-2 group-hover:bg-slate-900">
-                            Pegar Cupom <i data-lucide="arrow-up-right" class="w-4 h-4"></i>
+                            class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2.5 rounded-xl text-sm font-bold transition-all shadow-md shadow-indigo-100 active:scale-95 flex items-center justify-center gap-2 group-hover:bg-slate-900">
+                            Pegar <span class="hidden sm:inline">Desconto</span> <i data-lucide="arrow-right" class="w-4 h-4"></i>
                         </button>
                     </div>
                 `;
                 grid.appendChild(card);
             });
+            // Re-renderiza os ícones nos novos elementos
             lucide.createIcons();
         }
 
         window.handleConversion = (code, trackingUrl) => {
-            // 1. Tenta copiar (se tiver código)
-            if (code) {
+            // 1. Copia Código (se existir)
+            if (code && code !== 'undefined') {
                 const textArea = document.createElement("textarea");
                 textArea.value = code;
                 document.body.appendChild(textArea);
@@ -313,10 +383,10 @@
                 document.body.removeChild(textArea);
             }
 
-            // 2. Abre link
+            // 2. Abre Link (Delay curto para o usuário ver que copiou)
             setTimeout(() => {
-                window.open(trackingUrl, '_blank');
-            }, 500);
+                if(trackingUrl) window.open(trackingUrl, '_blank');
+            }, 600);
         };
 
         function showToast() {
@@ -325,10 +395,10 @@
             setTimeout(() => toast.classList.add('translate-y-24', 'opacity-0'), 3000);
         }
 
-        // Busca inicial
+        // Busca de Cupons ao iniciar
         fetchCoupons();
 
-        // Search
+        // Filtro de Busca
         document.getElementById('searchInput').addEventListener('input', (e) => {
             const term = e.target.value.toLowerCase();
             const filtered = allCoupons.filter(c => 
@@ -338,53 +408,62 @@
             renderCoupons(filtered);
         });
 
-        // 3D Background (Otimizado)
+        // Three.js Background (Otimizado e Leve)
         const init3D = () => {
             const container = document.getElementById('canvas-container');
+            if(!container) return;
+            
             const scene = new THREE.Scene();
             const camera = new THREE.PerspectiveCamera(75, window.innerWidth/window.innerHeight, 0.1, 1000);
             const renderer = new THREE.WebGLRenderer({alpha:true, antialias:true});
             
             renderer.setSize(window.innerWidth, window.innerHeight);
-            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2)); // Otimização
+            renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
             container.appendChild(renderer.domElement);
 
-            // Partículas sutis
-            const particlesGeom = new THREE.BufferGeometry();
-            const count = 40;
-            const posArray = new Float32Array(count * 3);
-            for(let i=0; i<count*3; i++) {
-                posArray[i] = (Math.random() - 0.5) * 25; 
+            // Formas Geométricas Flutuantes
+            const geometry = new THREE.IcosahedronGeometry(1, 0);
+            const material = new THREE.MeshBasicMaterial({ 
+                color: 0x6366f1, // Indigo
+                wireframe: true,
+                transparent: true,
+                opacity: 0.05
+            });
+
+            const shapes = [];
+            for(let i=0; i<10; i++) {
+                const mesh = new THREE.Mesh(geometry, material);
+                mesh.position.set(
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 20,
+                    (Math.random() - 0.5) * 10
+                );
+                mesh.rotation.set(Math.random()*Math.PI, Math.random()*Math.PI, 0);
+                scene.add(mesh);
+                shapes.push(mesh);
             }
-            particlesGeom.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
-            const material = new THREE.PointsMaterial({
-                size: 0.15, 
-                color: 0x4f46e5, // Indigo
-                transparent: true, 
-                opacity: 0.4
-            });
-            const particles = new THREE.Points(particlesGeom, material);
-            scene.add(particles);
 
-            camera.position.z = 5;
+            camera.position.z = 10;
 
-            let mouseY = 0;
             let mouseX = 0;
-
+            let mouseY = 0;
             window.addEventListener('mousemove', (e) => {
-                mouseX = e.clientX * 0.0005;
-                mouseY = e.clientY * 0.0005;
+                mouseX = (e.clientX / window.innerWidth) * 2 - 1;
+                mouseY = -(e.clientY / window.innerHeight) * 2 + 1;
             });
-
-            const clock = new THREE.Clock();
 
             function animate() {
                 requestAnimationFrame(animate);
-                const elapsedTime = clock.getElapsedTime();
                 
-                particles.rotation.y = elapsedTime * 0.05;
-                particles.rotation.x = -mouseY * 0.5;
-                particles.rotation.y += mouseX * 0.5;
+                // Movimento suave da câmera baseado no mouse
+                camera.position.x += (mouseX * 2 - camera.position.x) * 0.02;
+                camera.position.y += (mouseY * 2 - camera.position.y) * 0.02;
+                camera.lookAt(scene.position);
+
+                shapes.forEach((mesh, i) => {
+                    mesh.rotation.x += 0.001 * (i + 1);
+                    mesh.rotation.y += 0.002;
+                });
 
                 renderer.render(scene, camera);
             }
