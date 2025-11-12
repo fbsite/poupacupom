@@ -5,6 +5,7 @@ function makeRequest(url, token, apiKey) {
         const headers = {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
+            'Accept': 'application/json', // Garante que queremos JSON
             'User-Agent': 'CupaOferta-App/1.0',
             'x-api-key': apiKey || token 
         };
@@ -17,16 +18,17 @@ function makeRequest(url, token, apiKey) {
                     if (res.statusCode >= 200 && res.statusCode < 300) {
                         resolve(JSON.parse(data));
                     } else {
-                        // Tenta ler o erro se for JSON
+                        // Tenta ler o corpo do erro para saber o motivo real
                         try {
                             const errObj = JSON.parse(data);
-                            reject({ status: res.statusCode, message: errObj.description || errObj.message || 'Erro AWIN' });
+                            const erroMsg = errObj.description || errObj.message || 'Sem detalhes';
+                            reject({ status: res.statusCode, message: `AWIN Error (${res.statusCode}): ${erroMsg}` });
                         } catch(e) {
-                            reject({ status: res.statusCode, message: `Erro HTTP ${res.statusCode}` });
+                            reject({ status: res.statusCode, message: `HTTP Error ${res.statusCode} (Body não é JSON)` });
                         }
                     }
                 } catch (e) {
-                    reject({ status: 500, message: 'Erro no JSON da AWIN' });
+                    reject({ status: 500, message: 'Erro ao processar JSON da resposta' });
                 }
             });
         }).on('error', (err) => reject({ status: 500, message: err.message }));
@@ -34,6 +36,7 @@ function makeRequest(url, token, apiKey) {
 }
 
 module.exports = async (req, res) => {
+    // Configurações de CORS e Cache
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
@@ -43,19 +46,17 @@ module.exports = async (req, res) => {
     const PUBLISHER_ID = process.env.AWIN_PUBLISHER_ID;
 
     if (!AWIN_TOKEN || !PUBLISHER_ID) {
-        console.error("Configuração ausente na Vercel.");
-        return res.status(500).json({ error: 'CONFIG_MISSING', message: 'Configure as chaves na Vercel.' });
+        return res.status(500).json({ error: 'CONFIG_MISSING', message: 'Chaves AWIN não configuradas na Vercel.' });
     }
 
     try {
         let allOffers = [];
 
         // --- 1. CUPONS (Promotions API) ---
-        // Rota: publisher/{id}/promotions
+        // URL: publisher (singular)
         try {
-            console.log("Buscando Promoções...");
             const couponsData = await makeRequest(
-                `https://api.awin.com/publisher/${PUBLISHER_ID}/promotion?relationship=joined`, 
+                `https://api.awin.com/publisher/${PUBLISHER_ID}/promotions?relationship=joined`, 
                 AWIN_TOKEN,
                 AWIN_KEY
             );
@@ -73,15 +74,14 @@ module.exports = async (req, res) => {
                 }));
             }
         } catch (err) {
-            console.warn("API Promos falhou (pode ser normal se não houver cupons):", err.message);
+            console.warn("Log Cupons:", err.message);
         }
 
         // --- 2. PRODUTOS (Product API) ---
-        // Só busca produtos se tivermos poucos cupons (< 6)
-        // MELHORIA: Adicionado &region=BR e &currency=BRL para focar no Brasil
+        // URL CORRIGIDA: publisher (singular)
+        // Adicionado região BR e moeda BRL
         if (allOffers.length < 6) {
             try {
-                console.log("Buscando Produtos (Fallback)...");
                 const productsData = await makeRequest(
                     `https://api.awin.com/publisher/${PUBLISHER_ID}/product-search?region=BR&currency=BRL&min_price=5&limit=15`, 
                     AWIN_TOKEN,
@@ -102,16 +102,14 @@ module.exports = async (req, res) => {
                     allOffers = [...allOffers, ...formattedProducts];
                 }
             } catch (err) {
-                console.warn("API Produtos falhou:", err.message);
+                console.warn("Log Produtos:", err.message);
             }
         }
 
-        // Se após as duas tentativas a lista estiver vazia, retorna array vazio
-        // O frontend lidará com isso mostrando a mensagem "Sem ofertas ativas"
         return res.status(200).json(allOffers);
 
     } catch (error) {
-        console.error("Erro Fatal Backend:", error);
+        console.error("Erro Crítico:", error);
         return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
     }
 };
