@@ -55,7 +55,7 @@ module.exports = async (req, res) => {
         try {
             console.log("Buscando Promoções...");
             const couponsData = await makeRequest(
-                `https://api.awin.com/publisher/${PUBLISHER_ID}/promotions?relationship=joined`, 
+                `https://api.awin.com/publisher/${PUBLISHER_ID}/promotion?relationship=joined`, 
                 AWIN_TOKEN,
                 AWIN_KEY
             );
@@ -83,7 +83,7 @@ module.exports = async (req, res) => {
             try {
                 console.log("Buscando Produtos (Fallback)...");
                 const productsData = await makeRequest(
-                    `https://api.awin.com/publishers/${PUBLISHER_ID}/product-search?region=BR&currency=BRL&min_price=5&limit=15`, 
+                    `https://api.awin.com/publisher/${PUBLISHER_ID}/product-search?region=BR&currency=BRL&min_price=5&limit=15`, 
                     AWIN_TOKEN,
                     AWIN_KEY
                 );
