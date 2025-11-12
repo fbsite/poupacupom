@@ -75,8 +75,8 @@
     <div id="toast" class="fixed bottom-5 right-5 bg-slate-900 text-white px-6 py-4 rounded-lg shadow-2xl transform translate-y-24 opacity-0 transition-all duration-300 flex items-start gap-3 z-50 max-w-sm border-l-4 border-green-500">
         <i data-lucide="check-circle" class="w-5 h-5 text-green-400 mt-0.5 flex-shrink-0"></i>
         <div>
-            <p class="font-bold text-sm mb-0.5">Economia Garantida!</p>
-            <p class="text-xs text-slate-400">Código copiado. Aproveite antes que expire.</p>
+            <p class="font-bold text-sm mb-0.5">Sucesso!</p>
+            <p class="text-xs text-slate-400">Redirecionando para a loja parceira...</p>
         </div>
     </div>
 
@@ -109,7 +109,7 @@
             <section class="pb-8 px-4">
                 <div class="container mx-auto max-w-3xl text-center">
                     <h2 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight leading-tight">
-                        Cupons verificados <br class="hidden md:block" /> para você!
+                        Cupons & Produtos <br class="hidden md:block" /> verificados para você!
                     </h2>
                     <p class="text-slate-600 mb-8 text-lg max-w-2xl mx-auto">
                         Pare de deixar dinheiro na mesa. Acesse agora as melhores ofertas testadas e aprovadas.
@@ -119,7 +119,7 @@
                         <div class="absolute inset-0 bg-indigo-500 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
                         <div class="relative bg-white p-2 rounded-full shadow-xl border border-slate-200 flex items-center">
                             <i data-lucide="search" class="ml-4 text-slate-400 w-5 h-5"></i>
-                            <input type="text" id="searchInput" placeholder="Qual loja você quer economizar hoje?" class="flex-1 px-4 py-2 outline-none text-slate-700 bg-transparent placeholder:text-slate-400">
+                            <input type="text" id="searchInput" placeholder="Qual loja ou produto você procura?" class="flex-1 px-4 py-2 outline-none text-slate-700 bg-transparent placeholder:text-slate-400">
                         </div>
                     </div>
                 </div>
@@ -127,10 +127,10 @@
 
             <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4 mt-8">
                 <h3 class="font-bold text-xl text-slate-800 flex items-center gap-2">
-                    <i data-lucide="flame" class="w-5 h-5 text-orange-500 fill-orange-500"></i> Oportunidades do Dia
+                    <i data-lucide="flame" class="w-5 h-5 text-orange-500 fill-orange-500"></i> Destaques do Dia
                 </h3>
                 <button onclick="fetchCoupons()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors p-2 rounded-lg hover:bg-indigo-50">
-                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar Ofertas
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar
                 </button>
             </div>
 
@@ -230,11 +230,6 @@
                         <p class="text-slate-600 mt-1">No site da loja, vá até o carrinho de compras ou checkout. Procure pelo campo "Cupom de Desconto" ou "Voucher" e cole o código (Ctrl+V ou toque longo).</p>
                     </div>
                 </div>
-                
-                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg flex gap-3 mt-4">
-                    <i data-lucide="alert-circle" class="text-yellow-600 w-6 h-6 flex-shrink-0"></i>
-                    <p class="text-sm text-yellow-800"><strong>Dica:</strong> Se o botão disser "Ativar Oferta" em vez de "Garantir Desconto", significa que o desconto já está aplicado no link. Basta comprar normalmente!</p>
-                </div>
             </div>
         </div>
 
@@ -251,10 +246,6 @@
                     <h3 class="font-bold text-lg text-slate-900 mb-2">O cupom não funcionou, e agora?</h3>
                     <p class="text-slate-600">As lojas podem alterar regras de promoções sem aviso prévio. Verifique se o produto no carrinho atende aos requisitos (valor mínimo, categoria específica, primeira compra).</p>
                 </div>
-                <div>
-                    <h3 class="font-bold text-lg text-slate-900 mb-2">É seguro clicar nos links?</h3>
-                    <p class="text-slate-600">Totalmente. Nós apenas redirecionamos você para os sites oficiais das lojas (como Amazon, Nike, Magalu). Não processamos pagamentos nem pedimos dados bancários.</p>
-                </div>
             </div>
         </div>
 
@@ -267,9 +258,7 @@
                 <h4>1. Coleta de Dados</h4>
                 <p>Não exigimos cadastro para uso do site. Coletamos apenas dados anônimos de navegação para melhoria de performance e estatísticas de uso.</p>
                 <h4>2. Cookies e Rastreamento</h4>
-                <p>Utilizamos cookies para funcionamento básico do site e cookies de afiliados. Ao clicar em uma oferta, um cookie é instalado em seu navegador para que a loja parceira identifique que a visita veio do nosso site. Isso é essencial para manter o serviço gratuito.</p>
-                <h4>3. Links Externos</h4>
-                <p>Nosso site contém links para sites de terceiros. Não nos responsabilizamos pelas práticas de privacidade desses sites.</p>
+                <p>Utilizamos cookies para funcionamento básico do site e cookies de afiliados (AWIN MasterTag). Ao clicar em uma oferta, um cookie é instalado em seu navegador para que a loja parceira identifique que a visita veio do nosso site.</p>
             </div>
         </div>
 
@@ -281,8 +270,6 @@
                 <ul class="list-disc pl-5 space-y-2">
                     <li><strong>Natureza do Serviço:</strong> Somos um agregador de ofertas. Não vendemos produtos nem garantimos o preço final na loja parceira.</li>
                     <li><strong>Disponibilidade:</strong> Cupons têm validade e limite de uso definidos pelas lojas, podendo expirar a qualquer momento.</li>
-                    <li><strong>Responsabilidade:</strong> Qualquer problema com a compra, entrega ou produto deve ser tratado diretamente com a loja onde a compra foi realizada.</li>
-                    <li><strong>Propriedade Intelectual:</strong> As marcas e logotipos exibidos pertencem aos seus respectivos detentores.</li>
                 </ul>
             </div>
         </div>
@@ -339,15 +326,12 @@
 
         // --- SISTEMA DE NAVEGAÇÃO (SPA) ---
         function navigateTo(pageName) {
-            // 1. Esconde todas as seções
             const sections = document.querySelectorAll('.page-section');
             sections.forEach(section => section.classList.remove('active'));
-
-            // 2. Mostra a seção desejada
             const target = document.getElementById(`page-${pageName}`);
             if (target) {
                 target.classList.add('active');
-                window.scrollTo(0, 0); // Rola para o topo
+                window.scrollTo(0, 0);
             }
         }
 
@@ -416,12 +400,10 @@
                 renderCoupons(allCoupons);
             } finally {
                 skeleton.classList.add('hidden');
-                // Só mostra o grid se estivermos na página Home
                 const homePage = document.getElementById('page-home');
                 if (allCoupons.length > 0 && homePage.classList.contains('active')) {
                     grid.classList.remove('hidden');
                 } else if (allCoupons.length > 0) {
-                    // Se não estiver na home, remove hidden mas o CSS do page-section controla a visibilidade
                     grid.classList.remove('hidden');
                 }
             }
@@ -454,8 +436,19 @@
             if(coupons.length === 0) return;
 
             coupons.forEach(coupon => {
-                const logo = coupon.logoUrl || `https://placehold.co/60x60/f1f5f9/334155?text=${coupon.advertiser.name.charAt(0)}`;
-                const hasCode = coupon.code && coupon.code !== 'undefined';
+                // SE FOR PRODUTO (tem type='product' ou logoUrl vindo da API), usa a imagem do produto
+                // SE FOR CUPOM, usa o placeholder ou logoUrl
+                let imageUrl = coupon.logoUrl;
+                if (!imageUrl) {
+                    imageUrl = `https://placehold.co/60x60/f1f5f9/334155?text=${coupon.advertiser.name.charAt(0)}`;
+                }
+                
+                // Ajuste visual se for imagem de produto (sem padding) ou logo (com padding)
+                const isProductImage = coupon.type === 'product' || (coupon.logoUrl && coupon.logoUrl.includes('awin'));
+                const imgClass = isProductImage ? "w-full h-full object-cover" : "max-w-full max-h-full object-contain";
+                const imgContainerClass = isProductImage ? "w-16 h-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-sm" : "w-12 h-12 rounded-lg bg-white border border-slate-100 p-1 flex items-center justify-center overflow-hidden shadow-sm";
+
+                const hasCode = coupon.code && coupon.code !== 'undefined' && coupon.code !== 'OFERTA';
                 
                 const card = document.createElement('div');
                 card.className = "bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col group overflow-hidden h-full relative";
@@ -464,13 +457,13 @@
                     <div class="p-6 flex-1 flex flex-col">
                         <div class="flex justify-between items-start mb-4">
                             <div class="flex items-center gap-3">
-                                <div class="w-12 h-12 rounded-lg bg-white border border-slate-100 p-1 flex items-center justify-center overflow-hidden shadow-sm">
-                                    <img src="${logo}" alt="${coupon.advertiser.name}" class="max-w-full max-h-full object-contain">
+                                <div class="${imgContainerClass}">
+                                    <img src="${imageUrl}" alt="${coupon.advertiser.name}" class="${imgClass}">
                                 </div>
                                 <div>
                                     <h3 class="font-bold text-slate-900 leading-tight text-sm md:text-base">${coupon.advertiser.name}</h3>
                                     <span class="inline-flex items-center gap-1 text-[10px] font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-full mt-1 border border-green-200">
-                                        <i data-lucide="shield-check" class="w-3 h-3"></i> TESTADO
+                                        <i data-lucide="shield-check" class="w-3 h-3"></i> VERIFICADO
                                     </span>
                                 </div>
                             </div>
@@ -481,7 +474,7 @@
                         </p>
 
                         <div class="flex items-center gap-2 text-xs text-slate-500 bg-slate-50 p-2 rounded-lg self-start mt-auto w-full">
-                            <i data-lucide="clock" class="w-3 h-3"></i> Expira em: <span class="font-semibold text-slate-700">${coupon.endDate || 'Em breve'}</span>
+                            <i data-lucide="clock" class="w-3 h-3"></i> Validade: <span class="font-semibold text-slate-700">${coupon.endDate || 'Em breve'}</span>
                         </div>
                     </div>
 
@@ -493,7 +486,7 @@
                             </div>
                             <button onclick="handleConversion('${coupon.code || ''}', '${coupon.trackingUrl}')" 
                                 class="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg text-sm font-bold transition-all shadow-md shadow-indigo-100 active:scale-95 flex items-center justify-center gap-2 group-hover:bg-slate-900">
-                                ${hasCode ? 'Garantir Desconto' : 'Ativar Oferta'} 
+                                ${hasCode ? 'Garantir Desconto' : 'Ver Oferta'} 
                                 <i data-lucide="${hasCode ? 'scissors' : 'external-link'}" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -505,7 +498,7 @@
         }
 
         window.handleConversion = (code, trackingUrl) => {
-            if (code && code !== 'undefined') {
+            if (code && code !== 'undefined' && code !== 'OFERTA') {
                 const textArea = document.createElement("textarea");
                 textArea.value = code;
                 document.body.appendChild(textArea);
