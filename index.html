@@ -436,14 +436,11 @@
             if(coupons.length === 0) return;
 
             coupons.forEach(coupon => {
-                // SE FOR PRODUTO (tem type='product' ou logoUrl vindo da API), usa a imagem do produto
-                // SE FOR CUPOM, usa o placeholder ou logoUrl
                 let imageUrl = coupon.logoUrl;
                 if (!imageUrl) {
                     imageUrl = `https://placehold.co/60x60/f1f5f9/334155?text=${coupon.advertiser.name.charAt(0)}`;
                 }
                 
-                // Ajuste visual se for imagem de produto (sem padding) ou logo (com padding)
                 const isProductImage = coupon.type === 'product' || (coupon.logoUrl && coupon.logoUrl.includes('awin'));
                 const imgClass = isProductImage ? "w-full h-full object-cover" : "max-w-full max-h-full object-contain";
                 const imgContainerClass = isProductImage ? "w-16 h-16 rounded-lg bg-white border border-slate-100 flex items-center justify-center overflow-hidden shadow-sm" : "w-12 h-12 rounded-lg bg-white border border-slate-100 p-1 flex items-center justify-center overflow-hidden shadow-sm";
