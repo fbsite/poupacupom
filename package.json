@@ -1,0 +1,10 @@
+{
+  "name": "cupaoferta-app",
+  "version": "1.0.0",
+  "description": "App de Cupons integrado com AWIN",
+  "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
+  "dependencies": {}
+}
