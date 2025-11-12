@@ -52,6 +52,19 @@
             0% { background-position: -468px 0; }
             100% { background-position: 468px 0; }
         }
+
+        /* Esconde seções não ativas */
+        .page-section {
+            display: none;
+            animation: fadeIn 0.4s ease-out;
+        }
+        .page-section.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen relative">
@@ -70,7 +83,7 @@
     <!-- Header -->
     <header class="bg-white/80 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200">
         <div class="container mx-auto px-4 py-3 flex justify-between items-center">
-            <div class="flex items-center gap-2">
+            <div class="flex items-center gap-2 cursor-pointer" onclick="navigateTo('home')">
                 <div class="bg-indigo-600 text-white p-1.5 rounded-lg shadow-lg shadow-indigo-200">
                     <i data-lucide="scissors" class="w-6 h-6"></i>
                 </div>
@@ -80,63 +93,198 @@
                  <span id="api-status" class="hidden md:inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-medium bg-slate-100 text-slate-500 border border-slate-200">
                     <span class="w-2 h-2 rounded-full bg-slate-400"></span> Conectando...
                 </span>
+                <button onclick="navigateTo('home')" class="text-sm font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-lg transition-colors hidden md:block">
+                    Ir para Ofertas
+                </button>
             </div>
         </div>
     </header>
 
-    <!-- Hero Section -->
-    <section class="pt-12 pb-8 px-4">
-        <div class="container mx-auto max-w-3xl text-center">
-            <h2 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight leading-tight">
-                Cupons verificados <br class="hidden md:block" /> para você!
-            </h2>
-            <p class="text-slate-600 mb-8 text-lg max-w-2xl mx-auto">
-                Pare de deixar dinheiro na mesa. Acesse agora as melhores ofertas testadas e aprovadas.
-            </p>
+    <!-- MAIN CONTAINER -->
+    <main class="container mx-auto px-4 pb-20 max-w-6xl flex-grow pt-6">
+
+        <!-- ================= PAGE: HOME ================= -->
+        <div id="page-home" class="page-section active">
+            <!-- Hero Section -->
+            <section class="pb-8 px-4">
+                <div class="container mx-auto max-w-3xl text-center">
+                    <h2 class="text-3xl md:text-5xl font-bold text-slate-900 mb-4 tracking-tight leading-tight">
+                        Cupons verificados <br class="hidden md:block" /> para você!
+                    </h2>
+                    <p class="text-slate-600 mb-8 text-lg max-w-2xl mx-auto">
+                        Pare de deixar dinheiro na mesa. Acesse agora as melhores ofertas testadas e aprovadas.
+                    </p>
+                    
+                    <div class="relative max-w-lg mx-auto group z-10">
+                        <div class="absolute inset-0 bg-indigo-500 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
+                        <div class="relative bg-white p-2 rounded-full shadow-xl border border-slate-200 flex items-center">
+                            <i data-lucide="search" class="ml-4 text-slate-400 w-5 h-5"></i>
+                            <input type="text" id="searchInput" placeholder="Qual loja você quer economizar hoje?" class="flex-1 px-4 py-2 outline-none text-slate-700 bg-transparent placeholder:text-slate-400">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4 mt-8">
+                <h3 class="font-bold text-xl text-slate-800 flex items-center gap-2">
+                    <i data-lucide="flame" class="w-5 h-5 text-orange-500 fill-orange-500"></i> Oportunidades do Dia
+                </h3>
+                <button onclick="fetchCoupons()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors p-2 rounded-lg hover:bg-indigo-50">
+                    <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar Ofertas
+                </button>
+            </div>
+
+            <!-- Skeleton Loader -->
+            <div id="skeleton-loader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm">
+                    <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
+                </div>
+                <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm hidden md:flex">
+                    <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
+                </div>
+            </div>
+
+            <!-- Grid de Cupons -->
+            <div id="coupons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
+                <!-- JS injects here -->
+            </div>
             
-            <div class="relative max-w-lg mx-auto group z-10">
-                <div class="absolute inset-0 bg-indigo-500 rounded-full blur opacity-20 group-hover:opacity-30 transition-opacity"></div>
-                <div class="relative bg-white p-2 rounded-full shadow-xl border border-slate-200 flex items-center">
-                    <i data-lucide="search" class="ml-4 text-slate-400 w-5 h-5"></i>
-                    <input type="text" id="searchInput" placeholder="Qual loja você quer economizar hoje?" class="flex-1 px-4 py-2 outline-none text-slate-700 bg-transparent placeholder:text-slate-400">
+            <!-- Estado de Erro -->
+            <div id="error-state" class="hidden text-center py-12">
+                <div class="bg-red-50 inline-flex p-4 rounded-full mb-4"><i data-lucide="wifi-off" class="w-6 h-6 text-red-500"></i></div>
+                <h3 class="text-lg font-bold text-slate-800" id="error-title">Sem conexão</h3>
+                <p class="text-slate-500 mb-4" id="error-msg">Não perca essas ofertas. Tente reconectar.</p>
+                <button onclick="fetchCoupons()" class="text-indigo-600 font-bold hover:underline">Tentar novamente</button>
+            </div>
+        </div>
+
+        <!-- ================= PAGE: SOBRE NÓS ================= -->
+        <div id="page-about" class="page-section max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <button onclick="navigateTo('home')" class="mb-6 text-indigo-600 flex items-center gap-2 font-medium hover:underline"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar para ofertas</button>
+            <h2 class="text-3xl font-bold text-slate-900 mb-6">Sobre o CupaOferta</h2>
+            <div class="prose prose-slate text-slate-600 leading-relaxed space-y-4">
+                <p>O <strong>CupaOferta</strong> nasceu com uma missão simples: acabar com a frustração do "Cupom Inválido".</p>
+                <p>Sabemos que não há nada pior do que encher o carrinho, chegar no checkout e descobrir que o código que você encontrou na internet não funciona. Por isso, desenvolvemos uma tecnologia que conecta diretamente com as maiores lojas do Brasil.</p>
+                <h3 class="text-xl font-bold text-slate-800 mt-6 mb-2">Nossa Metodologia</h3>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li><strong>Verificação em Tempo Real:</strong> Nossas ofertas são sincronizadas via API diretamente com os anunciantes.</li>
+                    <li><strong>Curadoria Humana:</strong> Além da tecnologia, temos um time que testa os códigos manualmente.</li>
+                    <li><strong>Transparência:</strong> Se um link é apenas uma oferta e não um código, deixamos isso claro.</li>
+                </ul>
+                <p class="mt-4">Junte-se a milhares de compradores inteligentes que usam o CupaOferta diariamente para garantir o melhor preço.</p>
+            </div>
+        </div>
+
+        <!-- ================= PAGE: ANUNCIE ================= -->
+        <div id="page-advertise" class="page-section max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <button onclick="navigateTo('home')" class="mb-6 text-indigo-600 flex items-center gap-2 font-medium hover:underline"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar para ofertas</button>
+            <h2 class="text-3xl font-bold text-slate-900 mb-4">Anuncie sua Loja</h2>
+            <p class="text-slate-600 mb-8">Aumente suas vendas conectando sua marca a compradores com alta intenção de compra.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <div class="bg-indigo-50 p-6 rounded-xl">
+                    <i data-lucide="trending-up" class="w-8 h-8 text-indigo-600 mb-3"></i>
+                    <h3 class="font-bold text-slate-900">Alto Tráfego</h3>
+                    <p class="text-sm text-slate-600 mt-2">Milhares de visitantes diários buscando ativamente por produtos e descontos.</p>
+                </div>
+                <div class="bg-indigo-50 p-6 rounded-xl">
+                    <i data-lucide="target" class="w-8 h-8 text-indigo-600 mb-3"></i>
+                    <h3 class="font-bold text-slate-900">Conversão Focada</h3>
+                    <p class="text-sm text-slate-600 mt-2">Nossos usuários já estão na etapa final do funil de vendas, prontos para comprar.</p>
+                </div>
+            </div>
+
+            <div class="bg-slate-50 p-6 rounded-xl border border-slate-200 text-center">
+                <p class="font-bold text-slate-800 mb-2">Interessado em parceria?</p>
+                <p class="text-sm text-slate-600 mb-4">Entre em contato com nosso time comercial.</p>
+                <a href="mailto:parcerias@cupaoferta.com.br" class="inline-block bg-indigo-600 text-white px-6 py-2 rounded-lg font-bold hover:bg-indigo-700 transition-colors">Enviar E-mail</a>
+            </div>
+        </div>
+
+        <!-- ================= PAGE: COMO USAR ================= -->
+        <div id="page-help-use" class="page-section max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <button onclick="navigateTo('home')" class="mb-6 text-indigo-600 flex items-center gap-2 font-medium hover:underline"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar para ofertas</button>
+            <h2 class="text-3xl font-bold text-slate-900 mb-8">Como ativar cupons?</h2>
+            
+            <div class="space-y-8">
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl flex-shrink-0">1</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">Escolha sua Oferta</h3>
+                        <p class="text-slate-600 mt-1">Navegue pela nossa lista de lojas e escolha o cupom que deseja utilizar. Verifique a validade e a descrição.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl flex-shrink-0">2</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">Clique em "Garantir Desconto"</h3>
+                        <p class="text-slate-600 mt-1">Ao clicar no botão, nós copiamos automaticamente o código para a memória do seu dispositivo e abrimos o site da loja.</p>
+                    </div>
+                </div>
+
+                <div class="flex gap-4">
+                    <div class="w-10 h-10 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center font-bold text-xl flex-shrink-0">3</div>
+                    <div>
+                        <h3 class="font-bold text-lg text-slate-900">Cole no Carrinho</h3>
+                        <p class="text-slate-600 mt-1">No site da loja, vá até o carrinho de compras ou checkout. Procure pelo campo "Cupom de Desconto" ou "Voucher" e cole o código (Ctrl+V ou toque longo).</p>
+                    </div>
+                </div>
+                
+                <div class="bg-yellow-50 border border-yellow-200 p-4 rounded-lg flex gap-3 mt-4">
+                    <i data-lucide="alert-circle" class="text-yellow-600 w-6 h-6 flex-shrink-0"></i>
+                    <p class="text-sm text-yellow-800"><strong>Dica:</strong> Se o botão disser "Ativar Oferta" em vez de "Garantir Desconto", significa que o desconto já está aplicado no link. Basta comprar normalmente!</p>
                 </div>
             </div>
         </div>
-    </section>
 
-    <!-- Main Content -->
-    <main class="container mx-auto px-4 pb-20 max-w-6xl flex-grow">
-        
-        <div class="flex justify-between items-center mb-6 border-b border-slate-200 pb-4">
-            <h3 class="font-bold text-xl text-slate-800 flex items-center gap-2">
-                <i data-lucide="flame" class="w-5 h-5 text-orange-500 fill-orange-500"></i> Oportunidades do Dia
-            </h3>
-            <button onclick="fetchCoupons()" class="text-sm text-indigo-600 hover:text-indigo-800 font-medium flex items-center gap-1 transition-colors p-2 rounded-lg hover:bg-indigo-50">
-                <i data-lucide="refresh-cw" class="w-4 h-4"></i> Atualizar Ofertas
-            </button>
-        </div>
-
-        <!-- Skeleton Loader -->
-        <div id="skeleton-loader" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm">
-                <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
-            </div>
-             <div class="bg-white rounded-2xl p-6 border border-slate-100 h-56 flex flex-col justify-between shadow-sm hidden md:flex">
-                <div class="flex gap-4"><div class="w-12 h-12 rounded-lg skeleton shrink-0"></div><div class="w-full"><div class="h-4 w-24 skeleton mb-2 rounded"></div><div class="h-3 w-16 skeleton rounded"></div></div></div><div class="h-4 w-full skeleton rounded mt-4"></div><div class="h-4 w-2/3 skeleton rounded mt-2"></div><div class="h-10 w-full skeleton rounded mt-auto"></div>
+         <!-- ================= PAGE: FAQ ================= -->
+         <div id="page-faq" class="page-section max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <button onclick="navigateTo('home')" class="mb-6 text-indigo-600 flex items-center gap-2 font-medium hover:underline"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar para ofertas</button>
+            <h2 class="text-3xl font-bold text-slate-900 mb-6">Perguntas Frequentes</h2>
+            <div class="space-y-6">
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-2">O uso do CupaOferta é gratuito?</h3>
+                    <p class="text-slate-600">Sim! Você não paga absolutamente nada para usar nossos cupons. Nós somos remunerados pelas lojas parceiras quando você realiza uma compra.</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-2">O cupom não funcionou, e agora?</h3>
+                    <p class="text-slate-600">As lojas podem alterar regras de promoções sem aviso prévio. Verifique se o produto no carrinho atende aos requisitos (valor mínimo, categoria específica, primeira compra).</p>
+                </div>
+                <div>
+                    <h3 class="font-bold text-lg text-slate-900 mb-2">É seguro clicar nos links?</h3>
+                    <p class="text-slate-600">Totalmente. Nós apenas redirecionamos você para os sites oficiais das lojas (como Amazon, Nike, Magalu). Não processamos pagamentos nem pedimos dados bancários.</p>
+                </div>
             </div>
         </div>
 
-        <!-- Grid de Cupons -->
-        <div id="coupons-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 hidden">
-            <!-- JS injects here -->
+        <!-- ================= PAGE: PRIVACIDADE & TERMOS ================= -->
+        <div id="page-privacy" class="page-section max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <button onclick="navigateTo('home')" class="mb-6 text-indigo-600 flex items-center gap-2 font-medium hover:underline"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+            <h2 class="text-3xl font-bold text-slate-900 mb-6">Política de Privacidade</h2>
+            <div class="prose prose-slate text-sm text-slate-600">
+                <p>Sua privacidade é importante para o CupaOferta. Esta política explica como lidamos com seus dados.</p>
+                <h4>1. Coleta de Dados</h4>
+                <p>Não exigimos cadastro para uso do site. Coletamos apenas dados anônimos de navegação para melhoria de performance e estatísticas de uso.</p>
+                <h4>2. Cookies e Rastreamento</h4>
+                <p>Utilizamos cookies para funcionamento básico do site e cookies de afiliados. Ao clicar em uma oferta, um cookie é instalado em seu navegador para que a loja parceira identifique que a visita veio do nosso site. Isso é essencial para manter o serviço gratuito.</p>
+                <h4>3. Links Externos</h4>
+                <p>Nosso site contém links para sites de terceiros. Não nos responsabilizamos pelas práticas de privacidade desses sites.</p>
+            </div>
         </div>
-        
-        <!-- Estado de Erro -->
-        <div id="error-state" class="hidden text-center py-12">
-            <div class="bg-red-50 inline-flex p-4 rounded-full mb-4"><i data-lucide="wifi-off" class="w-6 h-6 text-red-500"></i></div>
-            <h3 class="text-lg font-bold text-slate-800" id="error-title">Sem conexão</h3>
-            <p class="text-slate-500 mb-4" id="error-msg">Não perca essas ofertas. Tente reconectar.</p>
-            <button onclick="fetchCoupons()" class="text-indigo-600 font-bold hover:underline">Tentar novamente</button>
+
+        <div id="page-terms" class="page-section max-w-3xl mx-auto bg-white p-8 rounded-2xl shadow-sm border border-slate-100">
+            <button onclick="navigateTo('home')" class="mb-6 text-indigo-600 flex items-center gap-2 font-medium hover:underline"><i data-lucide="arrow-left" class="w-4 h-4"></i> Voltar</button>
+            <h2 class="text-3xl font-bold text-slate-900 mb-6">Termos de Uso</h2>
+            <div class="prose prose-slate text-sm text-slate-600">
+                <p>Ao utilizar o CupaOferta, você concorda com os seguintes termos:</p>
+                <ul class="list-disc pl-5 space-y-2">
+                    <li><strong>Natureza do Serviço:</strong> Somos um agregador de ofertas. Não vendemos produtos nem garantimos o preço final na loja parceira.</li>
+                    <li><strong>Disponibilidade:</strong> Cupons têm validade e limite de uso definidos pelas lojas, podendo expirar a qualquer momento.</li>
+                    <li><strong>Responsabilidade:</strong> Qualquer problema com a compra, entrega ou produto deve ser tratado diretamente com a loja onde a compra foi realizada.</li>
+                    <li><strong>Propriedade Intelectual:</strong> As marcas e logotipos exibidos pertencem aos seus respectivos detentores.</li>
+                </ul>
+            </div>
         </div>
 
     </main>
@@ -145,7 +293,7 @@
     <footer class="bg-slate-900 text-slate-400 py-12 border-t border-slate-800 mt-auto relative z-10">
         <div class="container mx-auto px-4 grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
             <div class="col-span-1 md:col-span-1">
-                <div class="flex items-center gap-2 text-white mb-4">
+                <div class="flex items-center gap-2 text-white mb-4 cursor-pointer" onclick="navigateTo('home')">
                     <i data-lucide="scissors" class="w-5 h-5 text-indigo-500"></i>
                     <span class="font-bold text-lg">CupaOferta</span>
                 </div>
@@ -156,22 +304,22 @@
             <div>
                 <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Institucional</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Sobre nós</a></li>
-                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Anuncie sua Loja</a></li>
+                    <li><button onclick="navigateTo('about')" class="hover:text-indigo-400 transition-colors text-left">Sobre nós</button></li>
+                    <li><button onclick="navigateTo('advertise')" class="hover:text-indigo-400 transition-colors text-left">Anuncie sua Loja</button></li>
                 </ul>
             </div>
             <div>
                 <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Suporte</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Central de Ajuda</a></li>
-                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Como ativar cupons</a></li>
+                    <li><button onclick="navigateTo('faq')" class="hover:text-indigo-400 transition-colors text-left">Central de Ajuda</button></li>
+                    <li><button onclick="navigateTo('help-use')" class="hover:text-indigo-400 transition-colors text-left">Como ativar cupons</button></li>
                 </ul>
             </div>
             <div>
                 <h4 class="text-white font-bold mb-4 text-sm uppercase tracking-wider">Legal</h4>
                 <ul class="space-y-2 text-sm">
-                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Privacidade</a></li>
-                    <li><a href="#" class="hover:text-indigo-400 transition-colors">Termos</a></li>
+                    <li><button onclick="navigateTo('privacy')" class="hover:text-indigo-400 transition-colors text-left">Privacidade</button></li>
+                    <li><button onclick="navigateTo('terms')" class="hover:text-indigo-400 transition-colors text-left">Termos de Uso</button></li>
                 </ul>
             </div>
         </div>
@@ -182,13 +330,28 @@
         </div>
     </footer>
 
-    <!-- AWIN MasterTag -->
-    <script src="https://www.dwin2.com/pub.2589771.min.js"></script>
+    <!-- AWIN MasterTag (Com 'defer' para performance) -->
+    <script src="https://www.dwin2.com/pub.2589771.min.js" defer></script>
 
     <script>
         // Inicializa Ícones
         lucide.createIcons();
 
+        // --- SISTEMA DE NAVEGAÇÃO (SPA) ---
+        function navigateTo(pageName) {
+            // 1. Esconde todas as seções
+            const sections = document.querySelectorAll('.page-section');
+            sections.forEach(section => section.classList.remove('active'));
+
+            // 2. Mostra a seção desejada
+            const target = document.getElementById(`page-${pageName}`);
+            if (target) {
+                target.classList.add('active');
+                window.scrollTo(0, 0); // Rola para o topo
+            }
+        }
+
+        // --- DADOS E LÓGICA ---
         const MOCK_DATA = [
             { promotionId: 101, advertiser: { name: "Amazon Brasil" }, code: "PRIME25", description: "R$ 50 OFF em dispositivos Echo", trackingUrl: "https://amazon.com.br", endDate: "2025-12-31", logoUrl: "https://placehold.co/60x60/232f3e/fff?text=A" },
             { promotionId: 102, advertiser: { name: "Nike Store" }, code: "CORRIDA20", description: "20% de desconto extra em Tênis", trackingUrl: "https://nike.com.br", endDate: "2025-11-30", logoUrl: "https://placehold.co/60x60/111/fff?text=N" },
@@ -217,14 +380,12 @@
                 const contentType = response.headers.get("content-type");
 
                 if (!response.ok) {
-                     // Tenta ler a mensagem de erro do backend se for JSON
                     let message = "Erro desconhecido";
                     if (contentType && contentType.indexOf("application/json") !== -1) {
                         const errorData = await response.json();
                         message = errorData.message || errorData.error;
                         console.error("ERRO BACKEND:", errorData);
                         
-                        // Se for erro de configuração, avisa o usuário
                         if (errorData.error === 'CONFIG_MISSING' || errorData.error === 'AUTH_ERROR') {
                             showError(errorData.error, message);
                             throw new Error(message); 
@@ -236,7 +397,6 @@
                 const data = await response.json();
 
                 if (Array.isArray(data) && data.length === 0) {
-                    // API funcionou, mas não tem cupons
                     console.warn("API retornou 0 ofertas.");
                     showError("Nenhuma Oferta", "Sua conta AWIN está conectada, mas você ainda não tem parcerias ativas (Joined).");
                     updateStatus('empty');
@@ -250,14 +410,20 @@
 
             } catch (error) {
                 console.warn("Falha na API -> Usando Mock", error);
-                
                 await new Promise(r => setTimeout(r, 800)); 
                 allCoupons = MOCK_DATA;
                 updateStatus('demo');
                 renderCoupons(allCoupons);
             } finally {
                 skeleton.classList.add('hidden');
-                if (allCoupons.length > 0) grid.classList.remove('hidden');
+                // Só mostra o grid se estivermos na página Home
+                const homePage = document.getElementById('page-home');
+                if (allCoupons.length > 0 && homePage.classList.contains('active')) {
+                    grid.classList.remove('hidden');
+                } else if (allCoupons.length > 0) {
+                    // Se não estiver na home, remove hidden mas o CSS do page-section controla a visibilidade
+                    grid.classList.remove('hidden');
+                }
             }
         }
 
@@ -285,7 +451,6 @@
 
         function renderCoupons(coupons) {
             grid.innerHTML = '';
-            
             if(coupons.length === 0) return;
 
             coupons.forEach(coupon => {
