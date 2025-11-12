@@ -1,11 +1,7 @@
 const https = require('https');
 
-// Função auxiliar para fazer requisições HTTPS
 function makeRequest(url, token, apiKey) {
     return new Promise((resolve, reject) => {
-        // --- ATUALIZAÇÃO DE AUTENTICAÇÃO ---
-        // Adicionamos o 'x-api-key' conforme a documentação nova.
-        // Usamos a apiKey específica ou o token como fallback.
         const headers = {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
@@ -13,21 +9,24 @@ function makeRequest(url, token, apiKey) {
             'x-api-key': apiKey || token 
         };
 
-        const options = { headers };
-
-        https.get(url, options, (res) => {
+        https.get(url, { headers }, (res) => {
             let data = '';
             res.on('data', (chunk) => data += chunk);
             res.on('end', () => {
                 try {
-                    // Aceita 200 (OK) e 206 (Partial Content - comum em listas grandes)
                     if (res.statusCode >= 200 && res.statusCode < 300) {
                         resolve(JSON.parse(data));
                     } else {
-                        reject({ status: res.statusCode, message: `Erro AWIN: ${res.statusMessage || res.statusCode}` });
+                        // Tenta ler o erro se for JSON
+                        try {
+                            const errObj = JSON.parse(data);
+                            reject({ status: res.statusCode, message: errObj.description || errObj.message || 'Erro AWIN' });
+                        } catch(e) {
+                            reject({ status: res.statusCode, message: `Erro HTTP ${res.statusCode}` });
+                        }
                     }
                 } catch (e) {
-                    reject({ status: 500, message: 'Erro ao processar JSON da AWIN' });
+                    reject({ status: 500, message: 'Erro no JSON da AWIN' });
                 }
             });
         }).on('error', (err) => reject({ status: 500, message: err.message }));
@@ -35,29 +34,26 @@ function makeRequest(url, token, apiKey) {
 }
 
 module.exports = async (req, res) => {
-    // Configuração de CORS e Cache
     res.setHeader('Access-Control-Allow-Origin', '*');
     res.setHeader('Access-Control-Allow-Methods', 'GET');
     res.setHeader('Cache-Control', 's-maxage=300, stale-while-revalidate');
 
-    // Busca as credenciais do ambiente
     const AWIN_TOKEN = process.env.AWIN_API_TOKEN;
-    const AWIN_KEY = process.env.AWIN_API_KEY; // Nova variável (opcional, fallback para TOKEN)
+    const AWIN_KEY = process.env.AWIN_API_KEY; 
     const PUBLISHER_ID = process.env.AWIN_PUBLISHER_ID;
 
     if (!AWIN_TOKEN || !PUBLISHER_ID) {
-        return res.status(500).json({ 
-            error: 'CONFIG_MISSING', 
-            message: 'Configure AWIN_API_TOKEN e AWIN_PUBLISHER_ID na Vercel.' 
-        });
+        console.error("Configuração ausente na Vercel.");
+        return res.status(500).json({ error: 'CONFIG_MISSING', message: 'Configure as chaves na Vercel.' });
     }
 
     try {
         let allOffers = [];
 
-        // 1. Buscar CUPONS (Promotions API)
-        // Documentação antiga: Usa Authorization Bearer
+        // --- 1. CUPONS (Promotions API) ---
+        // Rota: publisher/{id}/promotions
         try {
+            console.log("Buscando Promoções...");
             const couponsData = await makeRequest(
                 `https://api.awin.com/publisher/${PUBLISHER_ID}/promotions?relationship=joined`, 
                 AWIN_TOKEN,
@@ -65,7 +61,7 @@ module.exports = async (req, res) => {
             );
 
             if (Array.isArray(couponsData)) {
-                const formattedCoupons = couponsData.map(promo => ({
+                allOffers = couponsData.map(promo => ({
                     type: 'coupon',
                     promotionId: promo.promotionId,
                     advertiser: { name: promo.advertiser.name, id: promo.advertiser.id },
@@ -73,22 +69,23 @@ module.exports = async (req, res) => {
                     description: promo.title || promo.description,
                     trackingUrl: promo.clickUrl || promo.trackingUrl,
                     endDate: promo.endDate || 'Em breve',
-                    logoUrl: null
+                    logoUrl: null 
                 }));
-                allOffers = [...allOffers, ...formattedCoupons];
             }
         } catch (err) {
-            console.warn("API Promos:", err.message);
+            console.warn("API Promos falhou (pode ser normal se não houver cupons):", err.message);
         }
 
-        // 2. Buscar PRODUTOS (Product API)
-        // Documentação nova: Exige x-api-key
+        // --- 2. PRODUTOS (Product API) ---
+        // Só busca produtos se tivermos poucos cupons (< 6)
+        // MELHORIA: Adicionado &region=BR e &currency=BRL para focar no Brasil
         if (allOffers.length < 6) {
             try {
+                console.log("Buscando Produtos (Fallback)...");
                 const productsData = await makeRequest(
-                    `https://api.awin.com/publishers/${PUBLISHER_ID}/product-search?min_price=10&limit=12`, 
+                    `https://api.awin.com/publishers/${PUBLISHER_ID}/product-search?region=BR&currency=BRL&min_price=5&limit=15`, 
                     AWIN_TOKEN,
-                    AWIN_KEY // Aqui o x-api-key é crucial
+                    AWIN_KEY
                 );
 
                 if (productsData && productsData.products) {
@@ -97,29 +94,24 @@ module.exports = async (req, res) => {
                         promotionId: prod.productId,
                         advertiser: { name: prod.merchant.name, id: prod.merchant.id },
                         code: 'OFERTA',
-                        description: `${prod.productName} - Por ${prod.price} ${prod.currency}`,
+                        description: `${prod.productName} - R$ ${prod.price}`,
                         trackingUrl: prod.awinDeepLink,
-                        endDate: 'Enquanto durar',
+                        endDate: 'Oferta Relâmpago',
                         logoUrl: prod.largeImage || prod.merchant.logoUrl
                     }));
                     allOffers = [...allOffers, ...formattedProducts];
                 }
             } catch (err) {
-                console.warn("API Produtos:", err.message);
+                console.warn("API Produtos falhou:", err.message);
             }
         }
 
-        if (allOffers.length === 0) {
-            return res.status(200).json([]);
-        }
-
+        // Se após as duas tentativas a lista estiver vazia, retorna array vazio
+        // O frontend lidará com isso mostrando a mensagem "Sem ofertas ativas"
         return res.status(200).json(allOffers);
 
     } catch (error) {
-        console.error("Erro Crítico:", error);
-        return res.status(500).json({ 
-            error: 'AUTH_ERROR', 
-            message: 'Falha na autenticação com AWIN.' 
-        });
+        console.error("Erro Fatal Backend:", error);
+        return res.status(500).json({ error: 'SERVER_ERROR', message: error.message });
     }
 };
